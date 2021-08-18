@@ -1,0 +1,133 @@
+/dts-v1/;
+
+#include "vr9.dtsi"
+
+/ {
+	model = "W723VB";
+
+	chosen {
+		bootargs = "console=ttyLTQ0,115200 init=/etc/preinit";
+
+	};
+
+	memory@0 {
+		reg = <0x0 0x4000000>;
+	};
+
+	fpi@10000000 {
+		localbus@0 {
+			nor-boot@0 {
+				compatible = "lantiq,nor";
+				bank-width = <2>;
+				reg = <0 0x0 0x1000000>;
+
+				partitions {
+					compatible = "fixed-partitions";
+					partition@0 {
+						label = "Boot";
+						reg = <0x00000 0x30000>;
+						read-only;
+					};
+
+					partition@20000 {
+						label = "Configuration";
+						reg = <0x30000 0x40000>;
+						read-only;
+					};
+
+					partition@70000 {
+						label = "Image 0";
+						reg = <0x70000 0x3c0000>;
+					};
+					
+					partition@430000 {
+						label = "Image 1";
+						reg = <0x430000 0x3c0000>;
+					};
+
+					partition@7F0000 {
+						label = "Boot Params";
+						reg = <0x7F0000 0x10000>;
+						read-only;
+					};
+				};
+			};
+		};
+
+
+		ifxhcd@E101000 {
+			status = "okay";
+			lantiq,portmask = <0x3>;
+		};
+
+		ifxhcd@E106000 {
+			status = "okay";
+		};
+	};
+
+	gphy-xrx200 {
+		compatible = "lantiq,phy-xrx200";
+		firmware = "lantiq/vr9_phy11g_a2x.bin";
+		phys = [ 00 01 ];
+	};
+};
+
+&eth0 {
+	lan: interface@0 {
+		compatible = "lantiq,xrx200-pdi";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		reg = <0>;
+		mac-address = [ 00 11 22 33 44 55 ];
+		lantiq,switch;
+
+		ethernet@0 {
+			compatible = "lantiq,xrx200-pdi-port";
+			reg = <0>;
+			phy-mode = "rmii";
+			phy-handle = <&phy0>;
+			// gpios = <&gpio 37 1>;
+		};
+		ethernet@1 {
+			compatible = "lantiq,xrx200-pdi-port";
+			reg = <1>;
+			phy-mode = "rmii";
+			phy-handle = <&phy1>;
+			// gpios = <&gpio 44 1>;
+		};
+		ethernet@2 {
+			compatible = "lantiq,xrx200-pdi-port";
+			reg = <2>;
+			phy-mode = "gmii";
+			phy-handle = <&phy11>;
+		};
+		ethernet@3 {
+			compatible = "lantiq,xrx200-pdi-port";
+			reg = <4>;
+			phy-mode = "gmii";
+			phy-handle = <&phy13>;
+		};
+	};
+
+	mdio@0 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "lantiq,xrx200-mdio";
+		phy0: ethernet-phy@0 {
+			reg = <0x00>;
+			compatible = "lantiq,phy11g", "ethernet-phy-ieee802.3-c22";
+		};
+		phy1: ethernet-phy@1 {
+			reg = <0x01>;
+			compatible = "lantiq,phy11g", "ethernet-phy-ieee802.3-c22";
+		};
+		phy11: ethernet-phy@11 {
+			reg = <0x11>;
+			compatible = "lantiq,phy11g", "ethernet-phy-ieee802.3-c22";
+		};
+		phy13: ethernet-phy@13 {
+			reg = <0x13>;
+			compatible = "lantiq,phy11g", "ethernet-phy-ieee802.3-c22";
+		};
+	};
+};
